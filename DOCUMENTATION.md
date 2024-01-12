@@ -154,4 +154,30 @@ Go to the URL where Tilt started its services (by default, it should be (http://
 stop it with `(Ctrl-C)` or `tilt down`
 
 ## Observability
-TODO
+In the [docker-compose.yml](bookshop-deployment/docker/docker-compose.yml) we added the following lines to every service:
+```
+- JAVA_TOOL_OPTIONS=-javaagent:/workspace/BOOT-INF/lib/opentelemetry-javaagent-1.32.0.jar
+- OTEL_SERVICE_NAME=catalog-service
+- OTEL_EXPORTER_OTLP_ENDPOINT=http://tempo:4317
+- OTEL_METRICS_EXPORTER=none
+```
+In every different `build.gradle` files we also set 
+```
+ext {
+    set('otelVersion', "1.32.0")
+    ...
+    }
+	
+dependencies {
+    ...
+    runtimeOnly "io.opentelemetry.javaagent:opentelemetry-javaagent:${otelVersion}"
+    ...
+}
+```
+As well as adding
+```
+logging:
+    pattern:
+       level: "%5p [${spring.application.name},%X{trace_id},%X{span_id}]"
+```
+in `src/main/resources/application.yml`. Now when we look at `docker logs catalog-service` we can see `[catalog-service,d9e61c8cf853fe7fdf953422c5ff567a,eef9e08caea9e32a]` showing us the trace id as well as the span id.
