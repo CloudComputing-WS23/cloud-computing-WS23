@@ -100,16 +100,18 @@ Tilt ensures the application remains synchronized with the source code. Any chan
 ## Orderflow in action
 1) make sure all backing services (containers) and applications are running -> navigate to `bookshop-deployment/docker`:
 ```
-docker-compose up
+docker-compose up -d bookshop-postgres bookshop-rabbitmq bookshop-redis
 ```
-Alternatively, we can only start some containers to test step by step. For example:
+and then start the applications `/gradlew bootRun` or from Docker Compose after building the images first and running them:
 ```
-docker-compose up -d bookshop-postgres bookshop-rabbitmq
+./gradlew bootBuildImage
+docker-compose up -d edge-service dispatch-service catalog-service order-service
 ```
-and then start the app dispatch service, catalog service and order service `/gradlew bootRun` or from Docker Compose after building the images first and running them.
+
 2) open up a browser and navigate to ` http://localhost:15672` to access the RabbitMQ management console after logging in with the credentials.
-Then add a new book in the catalog:
+Then send a request to catalog service and add a new book in the catalog:
 ```
+curl http:9001/books
 curl -X POST http://localhost:9001/books \
     -H "Content-Type: application/json" \
     -d '{"author": "Thomas Vitale", "title": "New Cloud Native Spring in Action", "isbn": "1234567897", "price": 9.90}'
@@ -199,6 +201,7 @@ minikube stop --profile bookshop
 ```
 
 ## Observability
+Event logs, health probes, and metrics offer an extensive range of important data to know the internal state of an application. Nonetheless, these tools do not take into account that cloud-native applications operate as distributed systems. For distributed tracing in our system we opted for OpenTelemetry.
 In the [docker-compose.yml](bookshop-deployment/docker/docker-compose.yml) we added the following lines to every service:
 ```
 - JAVA_TOOL_OPTIONS=-javaagent:/workspace/BOOT-INF/lib/opentelemetry-javaagent-1.32.0.jar
@@ -226,3 +229,5 @@ logging:
        level: "%5p [${spring.application.name},%X{trace_id},%X{span_id}]"
 ```
 in `src/main/resources/application.yml`. Now when we look at `docker logs catalog-service` we can see `[catalog-service,d9e61c8cf853fe7fdf953422c5ff567a,eef9e08caea9e32a]` showing us the trace id as well as the span id.
+- A trace is a record of the activities linked to a specific request or transaction, uniquely identified by a trace ID. It consists of multiple spans, which can span across various services.
+- Every stage in the processing of a request is termed a span, marked by its start and end times and uniquely identified by a combination of the trace ID and a span ID.
