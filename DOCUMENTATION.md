@@ -29,7 +29,7 @@ ddocker rm -fv CONTAINER_NAME
 ```
 
 ### Work with Kubernetes
-Create a new Kubernetes cluster named polar on top of Docker.
+Start the Kubernetes cluster:
 ```
 minikube start
 minikube image load <project_name>:<version>
@@ -120,6 +120,7 @@ curl -X POST http://localhost:9002/orders \
     -H "Content-Type: application/json" \
     -d '{"isbn": "1234567891", "quantity": "3"}'
 ```
+When we place an order for an existing book, the order gets accepted, and the Order Service publishes an OrderAcceptedEvent message. The Dispatcher Service, which subscribes to this event, then processes the order and publishes an OrderDispatchedEvent message. Following this, the Order Service receives a notification and updates the order status in the database.
 4) Fetch the orders:
 ```
 curl http://localhost:9002/orders
