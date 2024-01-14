@@ -20,7 +20,7 @@ spec:
     spec:
       containers:
         - name: edge-service
-          image: edge-service
+          image: ghcr.io/cloudcomputing-ws23/edge-service
           imagePullPolicy: IfNotPresent
           lifecycle:
             preStop:

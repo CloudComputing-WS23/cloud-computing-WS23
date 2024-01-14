@@ -20,7 +20,7 @@ spec:
     spec:
       containers:
         - name: dispatcher-service
-          image: dispatcher-service
+          image: ghcr.io/cloudcomputing-ws23/dispatcher-service
           imagePullPolicy: IfNotPresent
           lifecycle:
             preStop:
