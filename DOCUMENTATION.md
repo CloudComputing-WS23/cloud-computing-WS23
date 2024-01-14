@@ -3,9 +3,13 @@
 
 ## Building Spring Boot application
 ### Generate services projects
-Generate the project of all services from ![Spring Initializr](https://start.spring.io)
+Generate the project of all services from [Spring Initializr](https://start.spring.io)
+NOTE: for any test class of an application run:
+```
+./gradlew test --tests TEST_CLASS_NAME
+```
 
-### Build Images using Cloud Native Buildpacks
+## Build Images using Cloud Native Buildpacks
 navigate to the root folder of each service and run
  ```
 ./gradlew bootBuildImage
@@ -25,11 +29,26 @@ ddocker rm -fv CONTAINER_NAME
 ```
 
 ### Work with Kubernetes
+Create a new Kubernetes cluster named polar on top of Docker.
 ```
 minikube start
 minikube image load <project_name>:<version>
+```
+Remember to create the docker images beforehand. In a production scenario, the image would be fetched from a container registry.
+An example of `<project_name>:<version>` could be `catalog-service:latest`, where `<project_name>` is always the service root project name and the `<version>` is the corresponding project version in the build.gradle file or the tag `latest`.
+We now navigate to `bookshop-deployment/kubernetes/platform/development` and apply the services that are needed by our applications including database, RabbitMQ and Redis.
+```
+kubectl apply -f services
+```
+Now let's create the deployments for our microservices. There are two ways to do it:
+1) run the following commands for each service
+```
 kubectl create deplyment DEPLOYMENT_NAME --image=<project_name>:<version>
 ```
+2) make use of the YAML file under the root project file of each service
+```
+kubectl apply -f k8s/deployment.yml
+``` 
 Verify the creation of the Depolyments
 ```
 kubectl get deployment
@@ -39,26 +58,57 @@ By default, applications running in Kubernetes are not accessible. Fix it by run
 ```
 kubectl expose deployment DEPLOYMENT_NAME --name=SERVICE_NAME --port=PORT_NO
 ```
-The Service object exposes the application to other components inside the cluster.
+The Service object exposes the application (microservices) to other components inside the cluster.
 ```
+kubectl apply -f k8s/service.yml
 kubectl get service SERVICE_NAME
+kubectl get svc -l app=SERVICE_NAME
 ```
 To forward the traffic from a local port on the computer (for example, 8000) to the port exposed by the Service inside the cluster (8080) run:
 ```
-kubectl port-forward service/SERVICE_NAME 8000:PORT_NO
+kubectl port-forward service/SERVICE_NAME LOCAL_PORT:PORT_NO
 ```
-Stop port-forwarding with `(Ctrl-C)` and delete Service and Deployment with:
+Now navigate to localhost on the mentioned LOCAL_PORT and see if the service is up and running and test further endpoints.
+Stop port-forwarding with `(Ctrl-C)` and clean up by navigating to the root folder of each application where the Kubernetes manifests are defined:
+```
+kubectl delete -f k8s
+```
+or for each services and deployments:
 ```
 kubectl delete service SERVICE_NAME
 kubectl delete deployment DEPLOYMENT_NAME
 ```
+and delete backing services too by navigating to `bookshop-deployment/kubernetes/platform/development`:
+```
+kubectl delete -f services
+```
+and then stop minikube:
+```
+minikube stop
+```
+### Tilt configuration
+To automate the whole commands regarding building images and running kubernetes manifests, we could use `bookshop-deployment/kubernetes/applications/development`:
+```
+tilt up
+```
+Priorly, start the cluster and go to bookshop-deployment repository, navigate to the `kubernetes/platform/development` folder, and run the installations with `kubectl apply -f services`.
+Go to the URL where Tilt started its services (by default, it should be (http://localhost:10350)), and monitor the process that Tilt follows to build and deploy the services.
+Tilt has also activated port forwarding to the local machine, we can go ahead and verify that the applications are working correctly. Stop Tilt with `(Ctrl-C)` or `tilt down`.
+Remember to go to bookshop-deployment repository, navigate to the `kubernetes/platform/development` folder, and delete the installations with `kubectl delete -f services`. Finally, stop the cluster `minikube stop`.
+Tilt ensures the application remains synchronized with the source code. Any changes made to the applications prompt Tilt to initiate an update process, which involves building and deploying new container images. This entire procedure occurs automatically and continuously.
 
 ## Orderflow in action
-1) make sure PostgreSQL container is running:
+1) make sure all backing services (containers) and applications are running -> navigate to `bookshop-deployment/docker`:
 ```
-docker-compose up -d bookshop-rabbitmq bookshop-postgres
+docker-compose up
 ```
-2) open up a browser and navigate to ` http://localhost:15672` to access the RabbitMQ management console after logging in with the credentials. Then start the app dispatch service, catalog service and order service `/gradlew bootRun` or from Docker Compose after building the images first. Then add a new book in the catalog:
+Alternatively, we can only start some containers to test step by step. For example:
+```
+docker-compose up -d bookshop-postgres bookshop-rabbitmq
+```
+and then start the app dispatch service, catalog service and order service `/gradlew bootRun` or from Docker Compose after building the images first and running them.
+2) open up a browser and navigate to ` http://localhost:15672` to access the RabbitMQ management console after logging in with the credentials.
+Then add a new book in the catalog:
 ```
 curl -X POST http://localhost:9001/books \
     -H "Content-Type: application/json" \
@@ -79,11 +129,6 @@ The status should be "DISPATCHED".
 5) Stopp all applications with `(Ctrl-C)` and Docker containers with:
 ```
 docker-compose down
-```
-
-NOTE: for any test class:
-```
-./gradlew test --tests TEST_CLASS_NAME
 ```
 
 ### Dockerfile for the Catalog Service Image
@@ -120,8 +165,11 @@ or run
 In a browser see if the application works `http://localhost:9001/books`.
 
 ## Useful commands
+`chmod +x create-cluster.sh` and `chmod +x destroy-cluster.sh` to make the scripts executable.
 ```
 minikube start --cpus 2 --memory 4g --driver docker --profile bookshop
+minikube ip --profile bookshop
+minikube tunnel --profile bookshop # to expose the cluster to the local environment, and then use the 127.0.0.1 IP address to call the cluster
 kubectl get nodes
 kubectl config get-contexts
 kubectl config current-context
@@ -141,17 +189,13 @@ kubectl get pods -l app=catalog-service
 kubectl get svc -l app=catalog-service
 kubectl get all -l app=catalog-service
 kubectl logs deployment/catalog-service
+kubectl describe pod <pod_name>
+kubectl logs <pod_name>
 kubectl delete pod <pod-name>
 kubectl delete -f k8s
 kubectl delete -f services
 minikube stop --profile bookshop
 ```
-## Tilt configuration
-```
-tilt up
-```
-Go to the URL where Tilt started its services (by default, it should be (http://localhost:10350)), and monitor the process that Tilt follows to build and deploy the services.
-stop it with `(Ctrl-C)` or `tilt down`
 
 ## Observability
 In the [docker-compose.yml](bookshop-deployment/docker/docker-compose.yml) we added the following lines to every service:
