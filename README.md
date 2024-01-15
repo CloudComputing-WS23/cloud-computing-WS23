@@ -56,7 +56,7 @@ logging:
     pattern:
        level: "%5p [${spring.application.name},%X{trace_id},%X{span_id}]"
 ```
-in `src/main/resources/application.yml`. The logging pattern is only relevant if have the service as a container and we want to look at `docker logs catalog-service` we can see `[catalog-service,d9e61c8cf853fe7fdf953422c5ff567a,eef9e08caea9e32a]` showing us the trace id as well as the span id.
+in `src/main/resources/application.yml`. The logging pattern is only relevant if we have the service as a container and we want to look at `docker logs catalog-service` we can see `[catalog-service,d9e61c8cf853fe7fdf953422c5ff567a,eef9e08caea9e32a]` showing us the trace id as well as the span id.
 
 ## Jaeger Setup in Kubernetes
 
@@ -133,7 +133,7 @@ should show you the running jaeger instance, like this:
 NAME       STATUS    VERSION   STRATEGY   STORAGE   AGE
 jaeger     Running   1.52.0    allinone   memory    71m
 ```
-Also, check whether the `simplest-query` ingress has an IP address with `kubectl get ingress`.
+Also, check whether the `jaeger-query` ingress has an IP address with `kubectl get ingress`.
 If there is no address, you might have forgotten to enable the ingress plugin at the beginning. ```minikube stop```, enabling the ingress plugin if forgotten and ```minikube start``` helps here.
 
 ## Microservice Deployment in Kubernetes
@@ -147,7 +147,7 @@ The images of the services are already being pushed to the repository:
     -PregistryUsername=<github_username> \
     -PregistryToken=<github_token>
 ```
-These images are available on GitHub repo and are ready to be deployed in kubernetes.
+These images are available in the GitHub container registry and are ready to be deployed in Kubernetes.
 
 ### Deployment
 Execute the following commands one after another (it is recommended to wait until the corresponding pod has been started, check it via `kubectl get pods`, as starting all at once can lead to some containers restarting multiple times due to not reaching their availability and health probes because of the high load)
@@ -204,9 +204,20 @@ When your services are instrumented, up and running and you have made a few requ
 
 In the "Search" tab you can filter the traces by service, operation and time.
 ![image](https://github.com/CloudComputing-WS23/cloud-computing-WS23/assets/30859615/498467b3-b5de-4521-9ba6-0aa45cbbfa66)
-By clicking on a trace you can see the detailed way of the request through the microservices of the application, even including the database operations.
+
+By clicking on a trace you can see the detailed way and duration of the request through the microservices of the application, even including the database operations.
 ![image](https://github.com/CloudComputing-WS23/cloud-computing-WS23/assets/30859615/608fc9e5-a05e-484e-b992-af045b6ac360)
-TODO continue
+
+In the "Compare" tab you can compare two traces, but this is easier done by selecting to traces in the "Search" tab and clicking "Compare".
+
+In the "System Architecture" tab you can see graphs describing the microservice architecture. These diagrams are generated when Jaeger has collected enough data to analyze the architecture.
+
+![image](https://github.com/CloudComputing-WS23/cloud-computing-WS23/assets/30859615/4344c8da-3d17-44f2-9920-678f2aded2dc)
+
+![image](https://github.com/CloudComputing-WS23/cloud-computing-WS23/assets/30859615/0d417e3e-7249-47a0-b7bb-29ee05b6bf9c)
 
 ## OpenSearch
 We had planned to use OpenSearch (the open-source fork of ElasticSearch) as a storage backend for a Jaeger instance deployed with the "Production strategy" (details [here](https://www.jaegertracing.io/docs/1.53/operator/#production-strategy) and [here](https://www.jaegertracing.io/docs/1.53/operator/#elasticsearch-storage)). However, we have not been able to get the default running on our local Minikube clusters, presumably due to the resource requirements.
+
+## Cloud Deployment
+TODO Wimmer
