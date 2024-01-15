@@ -95,20 +95,18 @@ kubectl apply -f jaeger.yml
 ```
 using the YAML file in the repo
 
-or
+or putting
 ```
-kubectl apply -f - <<EOF
 apiVersion: jaegertracing.io/v1
 kind: Jaeger
 metadata:
   name: jaeger
-EOF
 ```
-creates the Jaeger instance using the ready-to-use "AllInOne" deployment strategy that stores the traces in-memory.
+into a file and applying it creates the Jaeger instance using the ready-to-use "AllInOne" deployment strategy that stores the traces in-memory.
 ### Troubleshooting
 If you get an error like
 ```
-Error from server (InternalError): error when creating ".\\jaeger.yaml":
+Error from server (InternalError): error when creating ".\\jaeger.yml":
 Internal error occurred: failed calling webhook "mjaeger.kb.io": failed to call webhook:
 Post "https://jaeger-operator-webhook-service.observability.svc:443/mutate-jaegertracing-io-v1-jaeger?timeout=10s":
 dial tcp 10.111.124.159:443: connect: connection refused
