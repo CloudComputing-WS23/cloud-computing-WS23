@@ -10,8 +10,53 @@
 [Proposal](./PROPOSAL.md)
 
 # Documentation
-## Instrumenting Spring Boot Microservices
-TODO
+## Instrumenting Spring Boot Microservices with OpenTelemetry
+For the microservices (instrumented to send OpenTelemetry traces), a few settings need to be passed via environment variables in their Kubernetes deployments. These changes are already done in the deployment.yml files of each microservice's repo.
+
+Example:
+```
+...
+      containers:
+        - name: catalog-service
+          image: ghcr.io/cloudcomputing-ws23/catalog-service
+...
+          env:
+            - name: JAVA_TOOL_OPTIONS
+              value: -javaagent:/workspace/BOOT-INF/lib/opentelemetry-javaagent-1.32.0.jar
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: http://otel-collector:4317
+            - name: OTEL_TRACES_EXPORTER
+              value: jaeger
+            - name: OTEL_METRICS_EXPORTER
+              value: none
+...
+```
+* `JAVA_TOOL_OPTIONS` tells the JVM to load the OpenTelemetry agent as well, which automatically executes the instrumentation.
+* `OTEL_EXPORTER_OLTP_ENDPOINT` specifies the Kubernetes service name and the gRPC port of the Jaeger collector to which the traces are to be sent.
+* `OTEL_TRACES_EXPORTER` selects the Jaeger exporter
+* `OTEL_METRICS_EXPORTER` is set to `none` as Jaeger cannot handle metrics but only traces. For metrics, solutions like Prometheus can be used.
+
+Additionally, in every different `build.gradle` files we also set 
+```
+ext {
+    set('otelVersion', "1.32.0")
+    ...
+    }
+	
+dependencies {
+    ...
+    runtimeOnly "io.opentelemetry.javaagent:opentelemetry-javaagent:${otelVersion}"
+    runtimeOnly "io.opentelemetry:opentelemetry-exporter-otlp:${otelVersion}"
+    ...
+}
+```
+As well as adding
+```
+logging:
+    pattern:
+       level: "%5p [${spring.application.name},%X{trace_id},%X{span_id}]"
+```
+in `src/main/resources/application.yml`. The logging pattern is only relevant if have the service as a container and we want to look at `docker logs catalog-service` we can see `[catalog-service,d9e61c8cf853fe7fdf953422c5ff567a,eef9e08caea9e32a]` showing us the trace id as well as the span id.
 
 ## Jaeger Setup in Kubernetes
 
@@ -42,7 +87,7 @@ adds the Jaeger operator, enabling us to create Jaeger objects in the K8s cluste
 Now we can create a Jaeger instance.
 ### Jaeger instance creation
 ```
-kubectl apply -f .\simplest.yml
+kubectl apply -f jaeger.yml
 ```
 using the YAML file in the repo
 
@@ -52,14 +97,14 @@ kubectl apply -n observability -f - <<EOF
 apiVersion: jaegertracing.io/v1
 kind: Jaeger
 metadata:
-  name: simplest
+  name: jaeger
 EOF
 ```
 creates the Jaeger instance using the ready-to-use "AllInOne" deployment strategy that stores the traces in-memory.
 ### Troubleshooting
 If you get an error like
 ```
-Error from server (InternalError): error when creating ".\\simplest.yaml":
+Error from server (InternalError): error when creating ".\\jaeger.yaml":
 Internal error occurred: failed calling webhook "mjaeger.kb.io": failed to call webhook:
 Post "https://jaeger-operator-webhook-service.observability.svc:443/mutate-jaegertracing-io-v1-jaeger?timeout=10s":
 dial tcp 10.111.124.159:443: connect: connection refused
@@ -86,34 +131,23 @@ kubectl get jaegers
 should show you the running jaeger instance, like this:
 ```
 NAME       STATUS    VERSION   STRATEGY   STORAGE   AGE
-simplest   Running   1.52.0    allinone   memory    71m
+jaeger     Running   1.52.0    allinone   memory    71m
 ```
 Also, check whether the `simplest-query` ingress has an IP address with `kubectl get ingress`.
 If there is no address, you might have forgotten to enable the ingress plugin at the beginning. ```minikube stop```, enabling the ingress plugin if forgotten and ```minikube start``` helps here.
 
 ## Microservice Deployment in Kubernetes
-### OpenTelementry configuration
-For the microservices (instrumented to send OpenTelemetry traces), a few settings need to be passed via environment variables in their Kubernetes deployments. These changes are already done in the deployment.yml files in this repo.
-
-Example:
+### Spring Boot application images
+The images of the services are already being pushed to the repository:
 ```
-...
-      containers:
-        - name: catalog-service
-          image: ghcr.io/cloudcomputing-ws23/catalog-service
-...
-          env:
-            - name: JAVA_TOOL_OPTIONS
-              value: -javaagent:/workspace/BOOT-INF/lib/opentelemetry-javaagent-1.32.0.jar
-            - name: OTEL_EXPORTER_OTLP_ENDPOINT
-              value: http://simplest-collector:4317
-            - name: OTEL_METRICS_EXPORTER
-              value: none
-...
+./gradlew bootBuildImage \
+    --imageName ghcr.io/<github_username>/SERVICE_NAME \
+    --publishImage \
+    -PregistryUrl=ghcr.io \
+    -PregistryUsername=<github_username> \
+    -PregistryToken=<github_token>
 ```
-* `JAVA_TOOL_OPTIONS` tells the JVM to load the OpenTelemetry agent as well, which automatically executes the instrumentation.
-* `OTEL_EXPORTER_OLTP_ENDPOINT` specifies the Kubernetes service name and the gRPC port of the Jaeger collector to which the traces are to be sent.
-* `OTEL_METRICS_EXPORTER` is set to `none` as Jaeger cannot handle metrics but only traces. For metrics, solutions like Prometheus can be used.
+These images are available on GitHub repo and are ready to be deployed in kubernetes.
 
 ### Deployment
 Execute the following commands one after another (it is recommended to wait until the corresponding pod has been started, check it via `kubectl get pods`, as starting all at once can lead to some containers restarting multiple times due to not reaching their availability and health probes because of the high load)
@@ -131,12 +165,16 @@ kubectl apply -f .\edge-service\k8s\ingress.yml
 kubectl apply -f .\order-service\k8s\deployment.yml
 kubectl apply -f .\order-service\k8s\service.yml
 ```
-
-Once all pods are up and running, you can execute
+Now exposes the applications to other components inside the cluster:
+```
+kubectl expose deployment DEPLOYMENT_NAME --name=SERVICE_NAME --port=PORT_NO
+kubectl port-forward service/SERVICE_NAME LOCAL_PORT:PORT_NO
+```
+For example, you can execute
 ```
 kubectl port-forward services/edge-service 8080:80
 ```
-to expose the edge-service via `localhost:8080`.
+and browse to `localhost:8080`.
 
 Then you can try
 ```
@@ -172,5 +210,3 @@ TODO continue
 
 ## OpenSearch
 We had planned to use OpenSearch (the open-source fork of ElasticSearch) as a storage backend for a Jaeger instance deployed with the "Production strategy" (details [here](https://www.jaegertracing.io/docs/1.53/operator/#production-strategy) and [here](https://www.jaegertracing.io/docs/1.53/operator/#elasticsearch-storage)). However, we have not been able to get the default running on our local Minikube clusters, presumably due to the resource requirements.
-
-TODO Bahara step-by-step how you got it somewhat running on your PC
