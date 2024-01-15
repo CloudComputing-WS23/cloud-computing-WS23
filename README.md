@@ -92,7 +92,74 @@ Also, check whether the `simplest-query` ingress has an IP address with `kubectl
 If there is no address, you might have forgotten to enable the ingress plugin at the beginning. ```minikube stop```, enabling the ingress plugin if forgotten and ```minikube start``` helps here.
 
 ## Microservice Deployment in Kubernetes
-TODO
+### OpenTelementry configuration
+For the microservices (instrumented to send OpenTelemetry traces), a few settings need to be passed via environment variables in their Kubernetes deployments. These changes are already done in the deployment.yml files in this repo.
+
+Example:
+```
+...
+      containers:
+        - name: catalog-service
+          image: ghcr.io/cloudcomputing-ws23/catalog-service
+...
+          env:
+            - name: JAVA_TOOL_OPTIONS
+              value: -javaagent:/workspace/BOOT-INF/lib/opentelemetry-javaagent-1.32.0.jar
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: http://simplest-collector:4317
+            - name: OTEL_METRICS_EXPORTER
+              value: none
+...
+```
+* `JAVA_TOOL_OPTIONS` tells the JVM to load the OpenTelemetry agent as well, which automatically executes the instrumentation.
+* `OTEL_EXPORTER_OLTP_ENDPOINT` specifies the Kubernetes service name and the gRPC port of the Jaeger collector to which the traces are to be sent.
+* `OTEL_METRICS_EXPORTER` is set to `none` as Jaeger cannot handle metrics but only traces. For metrics, solutions like Prometheus can be used.
+
+### Deployment
+Execute the following commands one after another (it is recommended to wait until the corresponding pod has been started, check it via `kubectl get pods`, as starting all at once can lead to some containers restarting multiple times due to not reaching their availability and health probes because of the high load)
+```
+kubectl apply -f .\bookshop-deployment\kubernetes\platform\development\services\postgresql.yml
+kubectl apply -f .\bookshop-deployment\kubernetes\platform\development\services\redis.yml
+kubectl apply -f .\bookshop-deployment\kubernetes\platform\development\services\rabbitmq.yml
+kubectl apply -f .\catalog-service\k8s\deployment.yml
+kubectl apply -f .\catalog-service\k8s\service.yml
+kubectl apply -f .\dispatcher-service\k8s\deployment.yml
+kubectl apply -f .\dispatcher-service\k8s\service.yml
+kubectl apply -f .\edge-service\k8s\deployment.yml
+kubectl apply -f .\edge-service\k8s\service.yml
+kubectl apply -f .\edge-service\k8s\ingress.yml
+kubectl apply -f .\order-service\k8s\deployment.yml
+kubectl apply -f .\order-service\k8s\service.yml
+```
+
+Once all pods are up and running, you can execute
+```
+kubectl port-forward services/edge-service 8080:80
+```
+to expose the edge-service via `localhost:8080`.
+
+Then you can try
+```
+GET http://localhost:8080/books
+```
+to get all books.
+
+With e.g.
+```
+POST http://localhost:8080/orders
+Content-Type: application/json
+Body:
+{
+    "isbn": "1234567891",
+    "quantity": 2
+}
+```
+you can submit an order, that you can then query with
+```
+GET http://localhost:8080/orders
+```
+
+All these requests and their paths through the application can be seen as traces in the Jaeger UI.
 
 ## Jaeger UI
 When your services are instrumented, up and running and you have made a few requests to them, browse to the IP address from the Jaeger instance ingress in your browser to open the Jaeger UI.
