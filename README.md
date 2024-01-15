@@ -10,6 +10,9 @@
 [Proposal](./PROPOSAL.md)
 
 # Documentation
+## Spring Boot Microservices Application
+Our Spring Boot Microservices application is a based on the implementations of [Thomas Vitale](https://github.com/ThomasVitale/cloud-native-spring-in-action/tree/main/PolarBookshop). In his implementations, he developed a bookshop consisting of five microservices (catalog, order, dispatcher, edge and config). Under the repositories of each microservice (README.md) we can see the endpoints they expose.
+
 ## Instrumenting Spring Boot Microservices with OpenTelemetry
 For the microservices (instrumented to send OpenTelemetry traces), a few settings need to be passed via environment variables in their Kubernetes deployments. These changes are already done in the deployment.yml files of each microservice's repo.
 
@@ -148,6 +151,7 @@ The images of the services are already being pushed to the repository:
     -PregistryToken=<github_token>
 ```
 These images are available in the GitHub container registry and are ready to be deployed in Kubernetes.
+In the file DOCUMENTATION.md we can see alternative ways how to build Spring Boot application images! Furthermore, the document reveals further details regarding docker and useful set of commands in k8s.
 
 ### Deployment
 Execute the following commands one after another (it is recommended to wait until the corresponding pod has been started, check it via `kubectl get pods`, as starting all at once can lead to some containers restarting multiple times due to not reaching their availability and health probes because of the high load)
@@ -217,6 +221,29 @@ In the "System Architecture" tab you can see graphs describing the microservice 
 
 ## OpenSearch
 We had planned to use OpenSearch (the open-source fork of ElasticSearch) as a storage backend for a Jaeger instance deployed with the "Production strategy" (details [here](https://www.jaegertracing.io/docs/1.53/operator/#production-strategy) and [here](https://www.jaegertracing.io/docs/1.53/operator/#elasticsearch-storage)). However, we have not been able to get the default running on our local Minikube clusters, presumably due to the resource requirements.
+
+### Attempt
+Prerequisites: Since the helm chart sets up a cluster of 3 nodes, it is advised to have at least 8GB of RAM for this deployment.
+Installation steps:
+1. Install [HELM](https://helm.sh/docs/intro/install/)
+2. Add HELM OpenSearch repo and install the operator
+```
+helm repo add opensearch-operator https://opensearch-project.github.io/opensearch-k8s-operator/
+helm install opensearch-operator opensearch-operator/opensearch-operator
+```
+After the operator is installed, create an OpenSearchCluster custom object in Kubernetes.
+```
+kubectl apply -f opensearch-cluster.yaml
+```
+After the cluster gets created, we saw all relative nodes were up and running: ```kubectl get pod```
+![OpenSearch Cluster](https://github.com/CloudComputing-WS23/cloud-computing-WS23/assets/67308427/6062c56f-eef2-4de7-9548-786265c2469b)
+- a bootstrap pod will be created that helps with initial master discovery
+- further pods for the OpenSearch cluster will be created (masters, nodes and coordinators), and one pod for the dashboards instance.
+After the pods are appearing as ready, which normally takes about 1-2 minutes, we can connect to our cluster using port-forwarding ```kubectl port-forward svc/opensearch-cluster 9200```, which for our attempt crashed.
+![Pods are no more reachable](https://github.com/CloudComputing-WS23/cloud-computing-WS23/assets/67308427/131cfae7-fb11-40a9-9f64-4fd6e08445e1)
+![Connection lost](https://github.com/CloudComputing-WS23/cloud-computing-WS23/assets/67308427/42ae9630-2df3-4a13-b097-0d299e191f50)
+
+If it had passed, for username=admin and password=admin we had seen the dashboard.
 
 ## Cloud Deployment
 TODO Wimmer
