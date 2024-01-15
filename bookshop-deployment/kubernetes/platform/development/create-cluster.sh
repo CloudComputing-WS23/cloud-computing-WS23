@@ -90,4 +90,7 @@ while [ $(kubectl get pods -l app.kubernetes.io/instance=jaeger | wc -l) -eq 0 ]
   sleep 5
 done
 
+helm repo add opensearch-operator https://opensearch-project.github.io/opensearch-k8s-operator/
+helm install opensearch-operator opensearch-operator/opensearch-operator
+
 echo "\n⛵ Happy Sailing!\n"
