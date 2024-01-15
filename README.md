@@ -248,4 +248,5 @@ If it had passed, for username=admin and password=admin we had seen the dashboar
 TODO Wimmer
 
 ## Lessons Learned
-TODO
+- It takes alot effort to understand microservices application, even for our small application it was time-consuming.
+- More powerful resources could have made it possible for us to deploy OpenSearch on our k8s-cluster.
