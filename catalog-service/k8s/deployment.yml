@@ -13,10 +13,6 @@ spec:
     metadata:
       labels:
         app: catalog-service
-      annotations:
-        prometheus.io/scrape: "true"
-        prometheus.io/path: /actuator/prometheus
-        prometheus.io/port: "9001"
     spec:
       containers:
         - name: catalog-service
@@ -37,6 +33,14 @@ spec:
               value: jdbc:postgresql://bookshop-postgres/db_catalog
             - name: SPRING_PROFILES_ACTIVE
               value: testdata
+            - name: JAVA_TOOL_OPTIONS
+              value: -javaagent:/workspace/BOOT-INF/lib/opentelemetry-javaagent-1.32.0.jar
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: http://otel-collector:4317
+            - name: OTEL_TRACES_EXPORTER
+              value: jaeger
+            - name: OTEL_METRICS_EXPORTER
+              value: none
           livenessProbe:
             httpGet:
               path: /actuator/health/liveness
