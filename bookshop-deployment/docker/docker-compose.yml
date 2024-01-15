@@ -8,7 +8,7 @@ services:
       - fluent-bit
       - bookshop-postgres
       - tempo
-    image: "ghcr.io/cloudcomputing-ws23/catalog-service:latest"
+    image: "catalog-service"
     container_name: "catalog-service"
     ports:
       - 9001:9001
@@ -36,7 +36,7 @@ services:
       - fluent-bit
       - bookshop-postgres
       - bookshop-rabbitmq
-    image: "ghcr.io/cloudcomputing-ws23/order-service:latest"
+    image: "order-service"
     container_name: "order-service"
     ports:
       - 9002:9002
@@ -63,7 +63,7 @@ services:
     depends_on:
       - fluent-bit
       - bookshop-rabbitmq
-    image: "ghcr.io/cloudcomputing-ws23/dispatcher-service:latest"
+    image: "dispatcher-service"
     container_name: dispatcher-service
     ports:
       - 9003:9003
@@ -87,7 +87,7 @@ services:
     depends_on:
       - fluent-bit
       - bookshop-redis
-    image: "ghcr.io/cloudcomputing-ws23/edge-service:latest"
+    image: "edge-service"
     container_name: "edge-service"
     ports:
       - 9000:9000
@@ -112,7 +112,7 @@ services:
   config-service:
     depends_on:
       - fluent-bit
-    image: "ghcr.io/cloudcomputing-ws23/config-service:latest"
+    image: "config-service"
     container_name: "config-service"
     ports:
       - 8888:8888

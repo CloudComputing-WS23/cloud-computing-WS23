@@ -25,6 +25,7 @@ dependencies {
 
 	runtimeOnly 'io.micrometer:micrometer-registry-prometheus'
 	runtimeOnly "io.opentelemetry.javaagent:opentelemetry-javaagent:${otelVersion}"
+    runtimeOnly 'io.opentelemetry:opentelemetry-exporter-otlp:${otelVersion}'
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }

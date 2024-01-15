@@ -17,7 +17,7 @@ spring:
     config:
       server:
         git:
-          uri: https://github.com/CloudComputing-WS23/cloud-computing-WS23/config-repo
+          uri: https://github.com/cloudcomputing-ws23/cloud-computing-WS23/config-repo
           default-label: dev
           timeout: 5
           clone-on-start: true
