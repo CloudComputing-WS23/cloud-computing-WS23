@@ -1,3 +1,5 @@
+/* Modifications copyright (C) 2024 Daniel Etzinger, Andreas Leeb, Bahara Muradi, Daniel Wimmer */
+
 plugins {
 	id 'java'
 	id 'org.springframework.boot' version '2.7.18'

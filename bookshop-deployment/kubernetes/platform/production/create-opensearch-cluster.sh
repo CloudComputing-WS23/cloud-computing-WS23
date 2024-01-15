@@ -1,5 +1,7 @@
 #!/bin/sh
 
+# Modifications copyright (C) 2024 Daniel Etzinger, Andreas Leeb, Bahara Muradi, Daniel Wimmer
+
 echo "\n📦 Get Kubernetes cluster ip and set the context to bookshop ...\n"
 
 kubectl config use-context bookshop

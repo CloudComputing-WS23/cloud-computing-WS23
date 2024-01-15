@@ -1,5 +1,7 @@
 #!/bin/sh
 
+# Modifications copyright (C) 2024 Daniel Etzinger, Andreas Leeb, Bahara Muradi, Daniel Wimmer
+
 echo "\n📦 Initializing Kubernetes cluster...\n"
 
 minikube start --cpus 2 --memory 4g --driver docker --profile bookshop

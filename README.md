@@ -1,3 +1,5 @@
+[comment]: <> (Modifications copyright (C) 2024 Daniel Etzinger, Andreas Leeb, Bahara Muradi, Daniel Wimmer)
+
 # Cloud Computing Project for winter term 2023
 
 ## Team members:

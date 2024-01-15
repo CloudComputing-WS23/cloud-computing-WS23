@@ -1,3 +1,5 @@
+# Modifications copyright (C) 2024 Daniel Etzinger, Andreas Leeb, Bahara Muradi, Daniel Wimmer
+
 receivers:
   jaeger: # the jaeger receiver the app is sending traces to
     protocols:
