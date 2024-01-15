@@ -24,7 +24,7 @@ Example:
             - name: JAVA_TOOL_OPTIONS
               value: -javaagent:/workspace/BOOT-INF/lib/opentelemetry-javaagent-1.32.0.jar
             - name: OTEL_EXPORTER_OTLP_ENDPOINT
-              value: http://otel-collector:4317
+              value: http://jaeger-collector:4317
             - name: OTEL_TRACES_EXPORTER
               value: jaeger
             - name: OTEL_METRICS_EXPORTER
