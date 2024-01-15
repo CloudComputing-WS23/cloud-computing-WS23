@@ -1,0 +1,71 @@
+server:
+  port: 9001
+  shutdown: graceful
+  tomcat:
+    connection-timeout: 2s
+    keep-alive-timeout: 15s
+    threads:
+      max: 50
+      min-spare: 5
+
+spring:
+  application:
+    name: catalog-service
+  lifecycle:
+    timeout-per-shutdown-phase: 15s
+  config:
+    import: "optional:configserver:"
+  cloud:
+    config:
+      uri: http://localhost:8888
+      #  making Spring Cloud Config Client more resilient
+      request-connect-timeout: 5000 # 5s
+      request-read-timeout: 5000 # 5s
+      fail-fast: false # In production, set to true
+      #  The retry pattern to let the application try again to connect with the config server
+      #	 before giving up and failing because Config Service is replicated and temporarily unavailable
+      retry:
+        max-attempts: 6
+        initial-interval: 1000 # 1s
+        max-interval: 2000 # 2s
+        multiplier: 1.1
+  datasource:
+    username: user
+    password: password
+    url: jdbc:postgresql://localhost:5432/db_catalog
+    hikari:
+      connection-timeout: 2000 #ms
+      maximum-pool-size: 5
+
+logging:
+  pattern:
+    level: "%5p [${spring.application.name},%X{trace_id},%X{span_id}]"
+
+info:
+  system: Bookshop
+
+# https://docs.spring.io/spring-boot/docs/2.1.0.RELEASE/reference/html/common-application-properties.html
+management:
+  endpoints:
+    web:
+      exposure:
+        include: configprops, env, flyway, health, heapdump, info, loggers, mappings, prometheus
+  endpoint:
+    health:
+      show-details: always
+      show-components: always
+      probes:
+        enabled: true
+  info:
+    env:
+      enabled: true
+    java:
+      enabled: true
+    os:
+      enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}
+
+bookshop:
+  greeting: "Welcome to the local book catalog!"

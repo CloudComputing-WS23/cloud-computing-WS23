@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: config-service
+  labels:
+    app: config-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: config-service
+  template:
+    metadata:
+      labels:
+        app: config-service
+    spec:
+      containers:
+        - name: config-service
+          image: ghcr.io/cloudcomputing-ws23/config-service
+          imagePullPolicy: IfNotPresent
+          lifecycle:
+            preStop:
+              exec:
+                command: [ "sh", "-c", "sleep 5" ]
+          ports:
+            - containerPort: 8888
+          env:
+            - name: BPL_JVM_THREAD_COUNT
+              value: "50"
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: http://simplest-collector:4317
+            - name: OTEL_METRICS_EXPORTER
+              value: none
+            - name: JAVA_TOOL_OPTIONS
+              value: -javaagent:/workspace/BOOT-INF/lib/opentelemetry-javaagent-1.32.0.jar
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8888
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8888
+            initialDelaySeconds: 5
+            periodSeconds: 15

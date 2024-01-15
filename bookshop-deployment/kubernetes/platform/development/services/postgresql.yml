@@ -1,0 +1,67 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-config
+  labels:
+    db: bookshop-postgres
+data:
+  init.sql: |
+    CREATE DATABASE db_catalog;
+    CREATE DATABASE db_order;
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bookshop-postgres
+  labels:
+    db: bookshop-postgres
+spec:
+  selector:
+    matchLabels:
+      db: bookshop-postgres
+  template:
+    metadata:
+      labels:
+        db: bookshop-postgres
+    spec:
+      containers:
+        - name: bookshop-postgres
+          image: postgres:14.10
+          env:
+            - name: POSTGRES_USER
+              value: user
+            - name: POSTGRES_PASSWORD
+              value: password
+          resources:
+            requests:
+              cpu: 100m
+              memory: 60Mi
+            limits:
+              cpu: 200m
+              memory: 120Mi
+          volumeMounts:
+            - mountPath: /docker-entrypoint-initdb.d
+              name: postgres-config-volume
+      volumes:
+        - name: postgres-config-volume
+          configMap:
+            name: postgres-config
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: bookshop-postgres
+  labels:
+    db: bookshop-postgres
+spec:
+  type: ClusterIP
+  selector:
+    db: bookshop-postgres
+  ports:
+    - protocol: TCP
+      port: 5432
+      targetPort: 5432

@@ -1,0 +1,48 @@
+receivers:
+  jaeger: # the jaeger receiver the app is sending traces to
+    protocols:
+      grpc:
+      thrift_binary:
+      thrift_compact:
+      thrift_http:
+
+  otlp: # the OTLP receiver the app is sending traces, metrics, logs to
+    protocols:
+      grpc:
+
+exporters:
+  prometheus:
+    endpoint: localhost:8889
+    namespace: promexample
+    const_labels:
+      label1: value1
+
+  logging:
+    loglevel: debug
+
+  otlp/jaeger: # Jaeger supports OTLP directly
+    endpoint: jaeger:4317 # The Jaeger gRPC endpoint to connect to.
+    tls:
+      insecure: true
+
+processors:
+  batch:
+
+extensions:
+  health_check:
+  pprof:
+    endpoint: :1888
+  zpages:
+    endpoint: :55679
+
+service:
+  extensions: [pprof, zpages, health_check]
+  pipelines:
+    traces:
+      receivers: [otlp, jaeger]
+      processors: [batch]
+      exporters: [logging, otlp/jaeger]
+    metrics:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [logging, prometheus]
