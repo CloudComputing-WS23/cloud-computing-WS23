@@ -8,3 +8,6 @@
 
 ## Project proposal
 [Proposal](./PROPOSAL.md)
+
+## Documentation
+[Documentation](./DOCUMENTATION.md)
