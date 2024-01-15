@@ -13,14 +13,10 @@ spec:
     metadata:
       labels:
         app: dispatcher-service
-      annotations:
-        prometheus.io/scrape: "true"
-        prometheus.io/path: /actuator/prometheus
-        prometheus.io/port: "9003"
     spec:
       containers:
         - name: dispatcher-service
-          image: dispatcher-service
+          image: ghcr.io/cloudcomputing-ws23/dispatcher-service
           imagePullPolicy: IfNotPresent
           lifecycle:
             preStop:
@@ -33,6 +29,12 @@ spec:
               value: http://config-service
             - name: SPRING_RABBITMQ_HOST
               value: bookshop-rabbitmq
+            - name: JAVA_TOOL_OPTIONS
+              value: -javaagent:/workspace/BOOT-INF/lib/opentelemetry-javaagent-1.32.0.jar
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: http://jaeger-collector:4317
+            - name: OTEL_METRICS_EXPORTER
+              value: none
           livenessProbe:
             httpGet:
               path: /actuator/health/liveness

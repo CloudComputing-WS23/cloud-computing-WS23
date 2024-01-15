@@ -13,14 +13,10 @@ spec:
     metadata:
       labels:
         app: edge-service
-      annotations:
-        prometheus.io/scrape: "true"
-        prometheus.io/path: /actuator/prometheus
-        prometheus.io/port: "9000"
     spec:
       containers:
         - name: edge-service
-          image: edge-service
+          image: ghcr.io/cloudcomputing-ws23/edge-service
           imagePullPolicy: IfNotPresent
           lifecycle:
             preStop:
@@ -37,6 +33,12 @@ spec:
               value: http://config-service
             - name: SPRING_REDIS_HOST
               value: bookshop-redis
+            - name: JAVA_TOOL_OPTIONS
+              value: -javaagent:/workspace/BOOT-INF/lib/opentelemetry-javaagent-1.32.0.jar
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: http://jaeger-collector:4317
+            - name: OTEL_METRICS_EXPORTER
+              value: none
           livenessProbe:
             httpGet:
               path: /actuator/health/liveness

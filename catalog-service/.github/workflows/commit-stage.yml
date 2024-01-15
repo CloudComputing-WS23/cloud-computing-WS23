@@ -3,7 +3,7 @@ on: push
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: CloudComputing-WS23/catalog-service
+  IMAGE_NAME: cloudcomputing-ws23/catalog-service
   VERSION: latest
 
 jobs:

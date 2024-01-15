@@ -13,14 +13,10 @@ spec:
     metadata:
       labels:
         app: config-service
-      annotations:
-        prometheus.io/scrape: "true"
-        prometheus.io/path: /actuator/prometheus
-        prometheus.io/port: "8888"
     spec:
       containers:
         - name: config-service
-          image: config-service
+          image: ghcr.io/cloudcomputing-ws23/config-service
           imagePullPolicy: IfNotPresent
           lifecycle:
             preStop:
@@ -31,6 +27,12 @@ spec:
           env:
             - name: BPL_JVM_THREAD_COUNT
               value: "50"
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: http://simplest-collector:4317
+            - name: OTEL_METRICS_EXPORTER
+              value: none
+            - name: JAVA_TOOL_OPTIONS
+              value: -javaagent:/workspace/BOOT-INF/lib/opentelemetry-javaagent-1.32.0.jar
           livenessProbe:
             httpGet:
               path: /actuator/health/liveness
