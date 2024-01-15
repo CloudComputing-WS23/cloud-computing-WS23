@@ -84,7 +84,8 @@ kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/
 ```
 adds the cert-manager to the K8s cluster, required by Jaeger.
 ```
-kubectl create -f https://github.com/jaegertracing/jaeger-operator/releases/download/v1.52.0/jaeger-operator.yaml
+kubectl create namespace observability 
+kubectl create -f https://github.com/jaegertracing/jaeger-operator/releases/download/v1.52.0/jaeger-operator.yaml -n observability
 ```
 adds the Jaeger operator, enabling us to create Jaeger objects in the K8s cluster.
 Now we can create a Jaeger instance.
