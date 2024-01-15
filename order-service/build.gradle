@@ -37,7 +37,7 @@ dependencies {
 
 	runtimeOnly 'io.micrometer:micrometer-registry-prometheus'
 	runtimeOnly "io.opentelemetry.javaagent:opentelemetry-javaagent:${otelVersion}"
-	runtimeOnly 'io.opentelemetry:opentelemetry-exporter-otlp:${otelVersion}'
+	runtimeOnly "io.opentelemetry:opentelemetry-exporter-otlp:${otelVersion}"
 	runtimeOnly 'org.flywaydb:flyway-core'
 	runtimeOnly 'org.postgresql:postgresql'
 	runtimeOnly 'org.postgresql:r2dbc-postgresql'
