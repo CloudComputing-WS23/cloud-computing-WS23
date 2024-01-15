@@ -93,7 +93,7 @@ using the YAML file in the repo
 
 or
 ```
-kubectl apply -n observability -f - <<EOF
+kubectl apply -f - <<EOF
 apiVersion: jaegertracing.io/v1
 kind: Jaeger
 metadata:
