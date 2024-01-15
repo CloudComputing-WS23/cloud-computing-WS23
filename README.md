@@ -63,14 +63,14 @@ in `src/main/resources/application.yml`. The logging pattern is only relevant if
 ### Prerequisites
 As a Kubernetes cluster we are using a local Minikube cluster for this tutorial
 * Minikube
-* a VM/container engine supported by Minikube (WSL, VirtualBox, Docker Engine etc.)
+* a VM/container driver [supported](https://minikube.sigs.k8s.io/docs/drivers/) by Minikube (Hyper-V, VirtualBox, Docker Engine etc.)
 * kubectl connected to the local Minikube cluster
 
 ### Minikube startup
 ```
 minikube start
 ```
-with WSL this worked fine, with VirtualBox it can happen that Minikube wrongly detects that virtualization (VT-X) is disabled in the BIOS even though it is activated, then add the `--no-vtx-check` option.
+with Hyper-V this worked fine, with VirtualBox it can happen that Minikube wrongly detects that virtualization (VT-X) is disabled in the BIOS even though it is activated, then add the `--no-vtx-check` option.
 ```
 minikube addons enable ingress
 ```
