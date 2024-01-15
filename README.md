@@ -34,7 +34,6 @@ Example:
 ```
 * `JAVA_TOOL_OPTIONS` tells the JVM to load the OpenTelemetry agent as well, which automatically executes the instrumentation.
 * `OTEL_EXPORTER_OLTP_ENDPOINT` specifies the Kubernetes service name and the gRPC port of the Jaeger collector to which the traces are to be sent.
-* `OTEL_TRACES_EXPORTER` selects the Jaeger exporter
 * `OTEL_METRICS_EXPORTER` is set to `none` as Jaeger cannot handle metrics but only traces. For metrics, solutions like Prometheus can be used.
 
 Additionally, in every different `build.gradle` files we also set 
