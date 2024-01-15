@@ -207,7 +207,6 @@ In the [docker-compose.yml](bookshop-deployment/docker/docker-compose.yml) we ad
 - JAVA_TOOL_OPTIONS=-javaagent:/workspace/BOOT-INF/lib/opentelemetry-javaagent-1.32.0.jar
 - OTEL_SERVICE_NAME=catalog-service
 - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger-collector:4317
-- OTEL_TRACES_EXPORTER=jaeger
 - OTEL_METRICS_EXPORTER=none
 ```
 In every different `build.gradle` files we also set 
