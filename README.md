@@ -165,12 +165,11 @@ kubectl apply -f .\edge-service\k8s\ingress.yml
 kubectl apply -f .\order-service\k8s\deployment.yml
 kubectl apply -f .\order-service\k8s\service.yml
 ```
-Now exposes the applications to other components inside the cluster:
+Now you can expose services to the world outside of the Kubernetes cluster with
 ```
-kubectl expose deployment DEPLOYMENT_NAME --name=SERVICE_NAME --port=PORT_NO
 kubectl port-forward service/SERVICE_NAME LOCAL_PORT:PORT_NO
 ```
-For example, you can execute
+To use the application from outside, execute
 ```
 kubectl port-forward services/edge-service 8080:80
 ```
