@@ -220,3 +220,6 @@ We had planned to use OpenSearch (the open-source fork of ElasticSearch) as a st
 
 ## Cloud Deployment
 TODO Wimmer
+
+## Lessons Learned
+TODO
