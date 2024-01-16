@@ -247,7 +247,7 @@ If it had passed, for username=admin and password=admin we had seen the dashboar
 ## Cloud Deployment
 Trying to run the application on cloud turned out to be quite impossible.
 ### Azure
-Azure was able to run some of the services - but just not all of them as there were too little vCPU cores available for the free trial. Even after upgrading to the paid version there was no possibility to change the number of vCPU cores without a support request. As this would have taken ages for pay-as-you-go users this was not an option.
+Azure was able to run some of the services - but just not all of them as there were too few vCPU cores available for the free trial. Even after upgrading to the paid version there was no possibility to change the number of vCPU cores without a support request. As this would have taken ages for pay-as-you-go users this was not an option.
 
 ### Google Cloud
 Google cloud was not able to run the images with the given `.yml` files. When running the images on their own it was working, with the env variables set the pods crashed constantly. Upgrading resources did not change anything.
