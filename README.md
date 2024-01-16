@@ -1,3 +1,5 @@
+[comment]: <> (Modifications copyright (C) 2024 Daniel Etzinger, Andreas Leeb, Bahara Muradi, Daniel Wimmer)
+
 # Cloud Computing Project for winter term 2023
 
 ## Team members:
@@ -242,8 +244,18 @@ After the pods are appearing as ready, which normally takes about 1-2 minutes, w
 If it had passed, for username=admin and password=admin we had seen the dashboard.
 
 ## Cloud Deployment
-TODO Wimmer
+Trying to run the application on cloud turned out to be quite impossible.
+### Azure
+Azure was able to run some of the services - but just not all of them as there were too few vCPU cores available for the free trial. Even after upgrading to the paid version there was no possibility to change the number of vCPU cores without a support request. As this would have taken ages for pay-as-you-go users this was not an option.
+
+### Google Cloud
+Google cloud was not able to run the images with the given `.yml` files. When running the images on their own it was working, with the env variables set the pods crashed constantly. Upgrading resources did not change anything.
+
+### AWS 
+AWS was the last resort and still after trying for a while it was not possible for us to get the cluster running properly.
 
 ## Lessons Learned
 - It takes alot effort to understand microservices application, even for our small application it was time-consuming.
 - More powerful resources could have made it possible for us to deploy OpenSearch on our k8s-cluster.
+- Setting up a PaaS like Azure takes a lot of time
+  - the free tier makes this attempt even harder

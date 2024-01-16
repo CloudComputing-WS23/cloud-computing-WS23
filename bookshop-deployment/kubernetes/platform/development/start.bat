@@ -1,4 +1,7 @@
 @echo off
+
+:: Modifications copyright (C) 2024 Daniel Etzinger, Andreas Leeb, Bahara Muradi, Daniel Wimmer
+
 REM prerequisites minikube
 minikube start
 minikube addons enable ingress
